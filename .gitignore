@@ -1,0 +1,42 @@
+# Compiled binaries
+bin/
+obj/
+
+# Rider
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Dotnet tools
+**/Properties/launchSettings.json
+
+# Build results
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+*.dbmdl
+
+# NuGet
+*.nupkg
+# Packages
+**/packages/*
+!**/packages/build/
+
+# EF Migrations snapshots
+*Migrations*/
+
+# OS files
+.DS_Store
+Thumbs.db
