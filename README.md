@@ -22,6 +22,21 @@ A clean, RESTful ASP.NET Core Web API demonstrating resource-oriented design, AP
 - Swagger UI: https://localhost:PORT/swagger
 - Users: `/api/v1/users`, `/api/v1/users/{id}`
 
+## Advanced Features Enabled
+- Output caching (global policy + per-endpoint via [OutputCache])
+- Rate limiting (fixed window, 100 req/min)
+- Centralized error handling with ProblemDetails
+- OpenTelemetry (ASP.NET Core + HTTP) with OTLP exporter (configure OTLP endpoint via environment variable)
+- Serilog structured logging
+- Health checks at `/health`
+
+## EF Core Migrations
+Local tool manifest is included.
+```
+ dotnet tool run dotnet-ef migrations add <Name> -p NebulaRest -s NebulaRest
+ dotnet tool run dotnet-ef database update -p NebulaRest -s NebulaRest
+```
+
 ## Configuration
 Update `NebulaRest/appsettings.json` connection string `ConnectionStrings:Default`.
 - Default uses `(localdb)\\MSSQLLocalDB`. If unavailable, ask to switch to SQLite/InMemory.
