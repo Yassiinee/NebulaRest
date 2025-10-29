@@ -34,8 +34,7 @@ obj/
 **/packages/*
 !**/packages/build/
 
-# EF Migrations snapshots
-*Migrations*/
+# EF: include migrations in source control
 
 # OS files
 .DS_Store
