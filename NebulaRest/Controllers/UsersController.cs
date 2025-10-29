@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using NebulaRest.Data;
 using NebulaRest.Dtos;
@@ -15,7 +16,7 @@ public class UsersController : ControllerBase
     public UsersController(AppDbContext db) => _db = db;
 
     [HttpGet]
-    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, NoStore = false)]
+    [OutputCache(Duration = 60, VaryByQueryKeys = new[] { "page", "pageSize" })]
     public async Task<ActionResult<IEnumerable<UserDto>>> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         if (page < 1) page = 1;
@@ -26,7 +27,6 @@ public class UsersController : ControllerBase
             .Select(u => new UserDto(u.Id, u.Name, u.Email))
             .ToListAsync();
 
-        Response.Headers["Cache-Control"] = "public,max-age=60";
         return Ok(items);
     }
 
