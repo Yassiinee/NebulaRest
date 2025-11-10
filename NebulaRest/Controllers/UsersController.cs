@@ -12,65 +12,90 @@ namespace NebulaRest.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class UsersController : ControllerBase
 {
+    private const int DefaultPage = 1;
+    private const int DefaultPageSize = 20;
+    private const int MaxPageSize = 200;
+    private const int CacheDurationSeconds = 60;
+
     private readonly AppDbContext _db;
+
     public UsersController(AppDbContext db) => _db = db;
 
     [HttpGet]
-    [OutputCache(Duration = 60, VaryByQueryKeys = new[] { "page", "pageSize" })]
-    public async Task<ActionResult<IEnumerable<UserDto>>> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    [OutputCache(Duration = CacheDurationSeconds, VaryByQueryKeys = new[] { "page", "pageSize" })]
+    public async Task<ActionResult<IEnumerable<UserDto>>> Get(
+        [FromQuery] int page = DefaultPage,
+        [FromQuery] int pageSize = DefaultPageSize)
     {
-        if (page < 1) page = 1;
-        if (pageSize < 1 || pageSize > 200) pageSize = 20;
+        var validatedPage = ValidatePage(page);
+        var validatedPageSize = ValidatePageSize(pageSize);
 
-        var query = _db.Users.AsNoTracking().OrderBy(u => u.Id);
-        var items = await query.Skip((page - 1) * pageSize).Take(pageSize)
+        var users = await _db.Users
+            .AsNoTracking()
+            .OrderBy(u => u.Id)
+            .Skip((validatedPage - 1) * validatedPageSize)
+            .Take(validatedPageSize)
             .Select(u => new UserDto(u.Id, u.Name, u.Email))
             .ToListAsync();
 
-        return Ok(items);
+        return Ok(users);
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<UserDto>> GetById(int id)
     {
-        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
-        if (user is null) return NotFound();
+        var user = await _db.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == id);
 
-        var etag = MakeEtag(user.RowVersion);
-        if (Request.Headers.TryGetValue("If-None-Match", out var ifNone) && ifNone.Any(v => v == etag))
-        {
-            Response.Headers["ETag"] = etag;
-            return StatusCode(304);
-        }
+        if (user is null)
+            return NotFound();
 
-        Response.Headers["ETag"] = etag;
+        var etag = GenerateETag(user.RowVersion);
+
+        if (IsETagMatch(etag))
+            return NotModified(etag);
+
+        SetETagHeader(etag);
         return Ok(new UserDto(user.Id, user.Name, user.Email));
     }
 
     [HttpPost]
     public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto dto)
     {
-        if (dto is null || string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.Email))
-            return BadRequest();
+        if (!IsValidCreateDto(dto))
+            return BadRequest("Name and Email are required.");
 
-        var entity = new User { Name = dto.Name.Trim(), Email = dto.Email.Trim() };
+        var entity = new User
+        {
+            Name = dto.Name.Trim(),
+            Email = dto.Email.Trim()
+        };
+
         _db.Users.Add(entity);
         await _db.SaveChangesAsync();
 
         var result = new UserDto(entity.Id, entity.Name, entity.Email);
-        return CreatedAtAction(nameof(GetById), new { id = entity.Id, version = "1.0" }, result);
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = entity.Id, version = "1.0" },
+            result);
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto)
     {
+        if (!IsValidUpdateDto(dto))
+            return BadRequest("Name and Email are required.");
+
         var entity = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (entity is null) return NotFound();
-        if (dto is null || string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.Email))
-            return BadRequest();
+
+        if (entity is null)
+            return NotFound();
 
         entity.Name = dto.Name.Trim();
         entity.Email = dto.Email.Trim();
+
         await _db.SaveChangesAsync();
         return NoContent();
     }
@@ -79,13 +104,48 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         var entity = await _db.Users.FindAsync(id);
-        if (entity is null) return NotFound();
+
+        if (entity is null)
+            return NotFound();
 
         _db.Users.Remove(entity);
         await _db.SaveChangesAsync();
+
         return NoContent();
     }
 
-    private static string MakeEtag(byte[]? rowVersion)
-        => rowVersion is { Length: > 0 } ? $"W/\"{Convert.ToBase64String(rowVersion)}\"" : "\"0\"";
+    // Private helper methods
+    private static int ValidatePage(int page) =>
+        page < 1 ? DefaultPage : page;
+
+    private static int ValidatePageSize(int pageSize) =>
+        pageSize < 1 || pageSize > MaxPageSize ? DefaultPageSize : pageSize;
+
+    private static string GenerateETag(byte[]? rowVersion) =>
+        rowVersion is { Length: > 0 }
+            ? $"W/\"{Convert.ToBase64String(rowVersion)}\""
+            : "\"0\"";
+
+    private bool IsETagMatch(string etag) =>
+        Request.Headers.TryGetValue("If-None-Match", out var ifNoneMatch) &&
+        ifNoneMatch.Any(v => v == etag);
+
+    private ActionResult NotModified(string etag)
+    {
+        SetETagHeader(etag);
+        return StatusCode(304);
+    }
+
+    private void SetETagHeader(string etag) =>
+        Response.Headers["ETag"] = etag;
+
+    private static bool IsValidCreateDto(CreateUserDto? dto) =>
+        dto is not null &&
+        !string.IsNullOrWhiteSpace(dto.Name) &&
+        !string.IsNullOrWhiteSpace(dto.Email);
+
+    private static bool IsValidUpdateDto(UpdateUserDto? dto) =>
+        dto is not null &&
+        !string.IsNullOrWhiteSpace(dto.Name) &&
+        !string.IsNullOrWhiteSpace(dto.Email);
 }
