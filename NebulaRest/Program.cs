@@ -8,6 +8,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Exporter;
 using Serilog;
 using NebulaRest.Data;
+using NebulaRest.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,9 +61,8 @@ builder.Services.AddApiVersioning(options =>
     options.ReportApiVersions = true;
 });
 
-// EF Core SqlServer
-var connString = builder.Configuration.GetConnectionString("Default");
-builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(connString));
+builder.Services.AddDatabaseConfiguration(builder.Configuration);
+builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 
