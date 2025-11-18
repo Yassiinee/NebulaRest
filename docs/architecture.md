@@ -1,0 +1,3 @@
+# Architecture
+
+NebulaRest follows a layered architecture...

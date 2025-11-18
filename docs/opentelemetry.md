@@ -1,0 +1,3 @@
+# OpenTelemetry
+
+How OTEL is configured...

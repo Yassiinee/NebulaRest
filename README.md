@@ -2,8 +2,7 @@
 
 A clean, RESTful ASP.NET Core Web API demonstrating resource-oriented design, API versioning, caching, Swagger, and EF Core (SQL Server).
 
-## Features
-- API versioning: routes under `/api/v1` (Microsoft.AspNetCore.Mvc.Versioning)
+## Featu- AP- API versioning: routes under `/api/v1` (Microsoft.AspNetCore.Mvc.Versioning)
 - Users resource CRUD: `GET/POST/PUT/DELETE /api/v1/users`
 - Pagination on list, ETag support on GET by id, response caching on list
 - EF Core + SQL Server LocalDB (dev) with auto database creation
@@ -51,13 +50,17 @@ Update `NebulaRest/appsettings.json` connection string `ConnectionStrings:Defaul
 
 ## Architecture
 
+```
 NebulaRest/
-├── Controllers/      # API endpoints
-├── Services/         # Business logic
-├── Data/            # EF Core DbContext
-├── Entities/        # Database models
-├── Dtos/            # Data transfer objects
-├── Validators/      # FluentValidation validators
-├── Middleware/      # Custom middleware
-├── Extensions/      # Extension methods
+├── Controllers/
+├── Services/
+├── Data/
+├── Entities/
+├── Dtos/
+├── Validators/
+├── Middleware/
+├── Extensions/
+└── Migrations/
+```
+ Extension methods
 └── Migrations/      # EF Core migrations
