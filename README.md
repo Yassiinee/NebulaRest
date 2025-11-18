@@ -49,3 +49,14 @@ Update `NebulaRest/appsettings.json` connection string `ConnectionStrings:Defaul
 - `NebulaRest/Entities/User.cs`
 - `NebulaRest/Dtos/UserDtos.cs`
 
+## Architecture
+NebulaRest/
+├── Controllers/      # API endpoints
+├── Services/         # Business logic
+├── Data/            # EF Core DbContext
+├── Entities/        # Database models
+├── Dtos/            # Data transfer objects
+├── Validators/      # FluentValidation validators
+├── Middleware/      # Custom middleware
+├── Extensions/      # Extension methods
+└── Migrations/      # EF Core migrations
