@@ -1,14 +1,25 @@
 # NebulaRest
 
-A clean, RESTful ASP.NET Core Web API demonstrating resource-oriented design, API versioning, caching, Swagger, and EF Core (SQL Server).
+A clean, production-grade ASP.NET Core Web API demonstrating **REST principles**, **API versioning**, **caching**, **OpenTelemetry**, **rate limiting**, **EF Core**, **Swagger**, and best-practice architecture.
 
-## Featu- AP- API versioning: routes under `/api/v1` (Microsoft.AspNetCore.Mvc.Versioning)
-- Users resource CRUD: `GET/POST/PUT/DELETE /api/v1/users`
-- Pagination on list, ETag support on GET by id, response caching on list
-- EF Core + SQL Server LocalDB (dev) with auto database creation
-- Swagger/OpenAPI UI
 
-## Getting Started
+---
+
+## 🚀 Features
+
+- RESTful resource-oriented design
+- API versioning (`/api/v1`)
+- CRUD for `Users`
+- Pagination, response caching, and ETag support
+- Centralized error handling (`ProblemDetails`)
+- Output caching / rate limiting / health checks
+- OpenTelemetry + OTLP exporter
+- Serilog structured logging
+- EF Core (SQL Server LocalDB)
+
+---
+
+## 📦 Getting Started
 1) Restore/build
 ```
  dotnet build NebulaRest.sln
