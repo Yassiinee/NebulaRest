@@ -50,6 +50,7 @@ Update `NebulaRest/appsettings.json` connection string `ConnectionStrings:Defaul
 - `NebulaRest/Dtos/UserDtos.cs`
 
 ## Architecture
+
 NebulaRest/
 ├── Controllers/      # API endpoints
 ├── Services/         # Business logic
